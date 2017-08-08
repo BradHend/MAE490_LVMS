@@ -92,7 +92,7 @@ startUp = false;
   Serial.print("Alt_A is: ");
   currentAltitudeA = pressAltitude(pressure_A)-initialAltitudeA;
   Serial.println(currentAltitudeA,4);
-  delay(1000);
+  delay(100);
   pressure_B = pressure(pressureB_pin);
   Serial.print("PressureB is: ");
   Serial.print(pressure_B);
@@ -100,7 +100,7 @@ startUp = false;
   Serial.print("Alt_B is: ");
   currentAltitudeB = pressAltitude(pressure_B)-initialAltitudeB;
   Serial.println(currentAltitudeB,4);
-  delay(1000);
+  delay(100);
     
     //Serial.println("Altitude is: ",currentAlt);
 }
