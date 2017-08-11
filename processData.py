@@ -1,16 +1,15 @@
-# MAE-490 LIFTOFF Team 3
+# MAE-490/492 LIFTOFF Team 3
 # Main data processing script
-# Created by: Bradley Henderson
+# Created by: Bradley Henderson, bradley.henderson@uah.edu
 # Date: 7/29/2017
-#   Last updated: 8/8/2017
+#   Last updated: 8/11/2017
 
 
 import math
-import numpy
-# import glob
+import numpy as np
 import matplotlib.pyplot as plt
+plt.close("all")
 
-#import flightData    #may not be used, idk yet
 
 #The following line needs to be changed based on the saving style, the headers
 #  must be in order as determined by the Arduino data saving
@@ -20,27 +19,40 @@ import matplotlib.pyplot as plt
 
 colHeaders = ['time_seconds','atmoPressureA','atmoPressureB','altA','altB','intPressure','intTemp']
 
+
+# VARIABLES ARE FOR TESTING, REMOVE LATER
+filename = 'FlightData2.csv'
+fig_dpi = 600
+
+
 #Ask for file name to process
 #filename = input('What is the data file to process? : ')   #ask user for data file to process
-filename = 'FlightData2.csv'
 print('The filename being processed is:',filename)                         #print what filename was input
+#fig_dpi = int(input('What dpi would you like the figures to be?: '))   #ask user for dpi value
+
+
+
+
 flightData = numpy.loadtxt(fname=filename, delimiter=',')  #get the flight data from the file
 
 
 #function to retrieve data based on what column header is requested
 def getData(colHeaders,data_array,variable_interest): 
     j = 0
-    for i in range(len(colHeaders)):            #loops over entire 'colHeaders' list
-        if colHeaders[i] == variable_interest:  #finds column index for requested data
-                j = i                               #hold the index value
-    dataRequested = data_array[:,j]                 #column of data
-    return dataRequested                            #return the requested data
+    for i in range(len(colHeaders)):             #loops over entire 'colHeaders' list
+        if colHeaders[i] == variable_interest:   #finds column index for requested data
+                j = i                            #hold the index value
+    dataRequested = data_array[:,j]              #column of data
+    return dataRequested                         #return the requested data
 
+
+######## Importing data section ########
 
 #get time (in ms)
 if 'time_millis' in colHeaders:
     time_ms = getData(colHeaders,flightData,'time')
     time_seconds = time_ms/1000.0
+#get time in seconds if not in milliseconds
 elif 'time_seconds' in colHeaders:
     time_seconds = getData(colHeaders,flightData,'time')
 #get atmosheric pressures
@@ -74,10 +86,19 @@ if 'mx' in colHeaders:
     mz = getData(colHeaders,flightData,'mz')
 
 
+######## Flight data characteristics section ########
+
+# velocity
+# max altitude?
+# max velocity?
+# coast time?
+# drag?
+# #thrust?
 
 
 
-##### Plotting section ####
+
+######## Plotting section ########
 if 'time_millis' or 'time_seconds' in colHeaders:
     if 'atmoPressureA' in colHeaders:
     #atmospheric pressure plot(s)
@@ -85,13 +106,12 @@ if 'time_millis' or 'time_seconds' in colHeaders:
         plt.title('Atmospheric Pressure vs. Time') # title        
         plt.ylabel('Pressure [Pa]')
         plt.xlabel('Time [s]')
-        plt.plot(time_seconds,atmoPressureA,'rs',time_seconds,atmoPressureB,'bo')
+        plt.plot(time_seconds,atmoPressureA, 'rs-', label='Sensor A')
+        plt.plot(time_seconds,atmoPressureB, 'bo-', label='Sensor B')
         fig_pressure.tight_layout()
+        plt.legend()
         plt.show()
-        plt.savefig('pressurePlot.png', dpi=None,facecolor='w', edgecolor='w',
-        orientation='portrait', papertype=None, format=None,
-        transparent=False, bbox_inches=None, pad_inches=0.1,
-        frameon=None)
+        plt.savefig('pressurePlot.png', dpi=fig_dpi)
         
         
     if 'altA' in colHeaders:
@@ -100,10 +120,12 @@ if 'time_millis' or 'time_seconds' in colHeaders:
         plt.title('Altitude vs. Time') # title        
         plt.ylabel('Altitude [ft]')
         plt.xlabel('Time [s]')
-        plt.plot(time_seconds,altA,'rs',time_seconds,altB,'bo')
+        plt.plot(time_seconds,altA,'rs-', label='Sensor A')
+        plt.plot(time_seconds,altB,'bo-', label='Sensor B')
         fig_pressure.tight_layout()
+        plt.legend()
         plt.show()
-        plt.savefig('altitudePlot.png', dpi=300, bbox_inches='tight')
+        plt.savefig('altitudePlot.png', dpi=fig_dpi, bbox_inches='tight')
 
     
     if 'intPressure' in colHeaders:
@@ -115,7 +137,7 @@ if 'time_millis' or 'time_seconds' in colHeaders:
         plt.plot(time_seconds,intPressure)
         fig_intPressure.tight_layout()
         plt.show()
-        plt.savefig('internalPressurePlot.png', dpi=300, bbox_inches='tight')        
+        plt.savefig('internalPressurePlot.png', dpi=fig_dpi, bbox_inches='tight')        
     
     if 'intTemp' in colHeaders:
     #internal temperature plot(s)
@@ -126,78 +148,45 @@ if 'time_millis' or 'time_seconds' in colHeaders:
         plt.plot(time_seconds,intTemp)
         fig_intTemp.tight_layout()
         plt.show()
-        plt.savefig('internalTempPlot.png', dpi=300, bbox_inches='tight')
+        plt.savefig('internalTempPlot.png', dpi=fig_dpi, bbox_inches='tight')
     
     if 'ax' in colHeaders:        
     #acceleration plot(s)
-        fig_accel = plt.pyplot.figure(figsize=(10.0, 3.0))
-        fig_accel.title('Acceleration vs. Time') # title
-        
-        axes1 = fig_accel.add_subplot(1, 3, 1)
-        axes2 = fig_accel.add_subplot(1, 3, 2)
-        axes3 = fig_accel.add_subplot(1, 3, 3)
-        
-        axes1.set_ylabel('x acceleration [g]')
-        axes1.set_xlabel('Time [s]')
-        axes1.plot(time_seconds,ax)
-        
-        axes2.set_ylabel('y acceleration [g]')
-        axes2.set_xlabel('Time [s]')
-        axes2.plot(time_seconds,ay)
-        
-        axes3.set_ylabel('z acceleration [g]')
-        axes3.set_xlabel('Time [s]')
-        axes3.plot(time_seconds,az)
-        
+        fig_accel = plt.pyplot.figure(5)
+        plt.title('Acceleration vs. Time') # title
+        plt.ylabel('Acceleration [g]')
+        plt.xlabel('Time [s]')
+        plt.plot(time_seconds, ax, label='X axis')
+        plt.plot(time_seconds, ay, label='Y axis')
+        plt.plot(time_seconds, az, label='Z axis')        
         fig_accel.tight_layout()
-        plt.pyplot.show()
-        plt.savefig('accerlerationPlot.png', bbox_inches='tight')
+        plt.legend()
+        plt.show()
+        plt.savefig('accerlerationPlot.png', dpi=fig_dpi, bbox_inches='tight')
     
     if 'roll' in colHeaders:
     #angular rates plot(s)
-        fig_rates = plt.pyplot.figure(figsize=(10.0, 3.0))
-        fig_rates.title('Angular Rates vs. Time') # title
-        
-        axes1 = fig_rates.add_subplot(1, 3, 1)
-        axes2 = fig_rates.add_subplot(1, 3, 2)
-        axes3 = fig_rates.add_subplot(1, 3, 3)
-        
-        axes1.set_ylabel('Roll [deg/s]')
-        axes1.set_xlabel('Time [s]')
-        axes1.plot(time_seconds,roll)
-        
-        axes2.set_ylabel('Pitch [deg/s]')
-        axes2.set_xlabel('Time [s]')
-        axes2.plot(time_seconds,pitch)
-        
-        axes3.set_ylabel('yaw [deg/s]')
-        axes3.set_xlabel('Time [s]')
-        axes3.plot(time_seconds,yaw)
-        
+        fig_rates = plt.pyplot.figure(6)
+        plt.title('Angular Rates vs. Time') # title
+        plt.ylabel('Roll [deg/s]')
+        plt.xlabel('Time [s]')
+        plt.plot(time_seconds,roll, label='Roll')
+        plt.plot(time_seconds,pitch, label='Pitch')
+        plt.plot(time_seconds,yaw, label='Yaw')
         fig_accel.tight_layout()
-        plt.pyplot.show()
-        plt.savefig('angularRatesPlot.png', bbox_inches='tight')
+        plt.legend()
+        plt.show()
+        plt.savefig('angularRatesPlot.png', dpi=fig_dpi, bbox_inches='tight')
+    
     if 'mx' in colHeaders:
     #magnetometer plot(s)
-        fig_mag = plt.pyplot.figure(figsize=(10.0, 3.0))
-        fig_mag.title('Angular Rates vs. Time') # title
-        
-        axes1 = fig_mag.add_subplot(1, 3, 1)
-        axes2 = fig_mag.add_subplot(1, 3, 2)
-        axes3 = fig_mag.add_subplot(1, 3, 3)
-        
-        axes1.set_ylabel('x Field [mGauss]')
-        axes1.set_xlabel('Time [s]')
-        axes1.plot(time_seconds,mx)
-        
-        axes2.set_ylabel('y Field [mGauss]')
-        axes2.set_xlabel('Time [s]')
-        axes2.plot(time_seconds,my)
-        
-        axes3.set_ylabel('z Field [mGauss]')
-        axes3.set_xlabel('Time [s]')
-        axes3.plot(time_seconds,mz)
-        
+        fig_mag = plt.pyplot.figure(7)
+        plt.title('Angular Rates vs. Time') # title
+        plt.ylabel('Magnetic Field [mGauss]')
+        plt.xlabel('Time [s]')
+        plt.plot(time_seconds, mx, label='X axis')
+        plt.plot(time_seconds, my, label='Y axis')
+        plt.plot(time_seconds, mz, label='Z axis')
         fig_mag.tight_layout()
-        plt.pyplot.show()
-        plt.savefig('magneticFieldPlot.png', bbox_inches='tight')
+        plt.show()
+        plt.savefig('magneticFieldPlot.png', dpi=fig_dpi, bbox_inches='tight')
