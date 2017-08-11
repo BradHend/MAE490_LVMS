@@ -18,19 +18,19 @@ import matplotlib.pyplot as plt
 #              'intPressure','intTemp','ax','ay','az','mx','my','mz',
 #              'roll','pitch','yaw']
 
-colHeaders = ['time_millis','atmoPressureA','atmoPressureB']
+colHeaders = ['time_seconds','atmoPressureA','atmoPressureB','altA','altB','intPressure','intTemp']
 
 #Ask for file name to process
 #filename = input('What is the data file to process? : ')   #ask user for data file to process
-filename = 'pressureTestData.csv'
+filename = 'FlightData2.csv'
 print('The filename being processed is:',filename)                         #print what filename was input
 flightData = numpy.loadtxt(fname=filename, delimiter=',')  #get the flight data from the file
 
 
 #function to retrieve data based on what column header is requested
 def getData(colHeaders,data_array,variable_interest): 
+    j = 0
     for i in range(len(colHeaders)):            #loops over entire 'colHeaders' list
-        j = 0
         if colHeaders[i] == variable_interest:  #finds column index for requested data
                 j = i                               #hold the index value
     dataRequested = data_array[:,j]                 #column of data
@@ -41,6 +41,8 @@ def getData(colHeaders,data_array,variable_interest):
 if 'time_millis' in colHeaders:
     time_ms = getData(colHeaders,flightData,'time')
     time_seconds = time_ms/1000.0
+elif 'time_seconds' in colHeaders:
+    time_seconds = getData(colHeaders,flightData,'time')
 #get atmosheric pressures
 if 'atmoPressureA' in colHeaders:
     atmoPressureA = getData(colHeaders,flightData,'atmoPressureA')
@@ -76,68 +78,55 @@ if 'mx' in colHeaders:
 
 
 ##### Plotting section ####
-if 'time_millis' in colHeaders:
+if 'time_millis' or 'time_seconds' in colHeaders:
     if 'atmoPressureA' in colHeaders:
     #atmospheric pressure plot(s)
         fig_pressure = plt.figure(1)
-        plt.title('Atmospheric Pressure vs. Time') # title
-        
-        axes1 = fig_pressure.add_subplot(2, 1, 1)
-        axes2 = fig_pressure.add_subplot(2, 1, 2)
-        
-        axes1.set_ylabel('PressureA [Pa]')
-        axes1.set_xlabel('Time [s]')
-        axes1.plot(time_seconds,atmoPressureA)
-        
-        axes2.set_ylabel('PressureB [Pa]')
-        axes2.set_xlabel('Time [s]')
-        axes2.plot(time_seconds,atmoPressureB)
-        
+        plt.title('Atmospheric Pressure vs. Time') # title        
+        plt.ylabel('Pressure [Pa]')
+        plt.xlabel('Time [s]')
+        plt.plot(time_seconds,atmoPressureA,'rs',time_seconds,atmoPressureB,'bo')
         fig_pressure.tight_layout()
         plt.show()
-        plt.savefig('pressurePlot.png', bbox_inches='tight')
+        plt.savefig('pressurePlot.png', dpi=None,facecolor='w', edgecolor='w',
+        orientation='portrait', papertype=None, format=None,
+        transparent=False, bbox_inches=None, pad_inches=0.1,
+        frameon=None)
+        
         
     if 'altA' in colHeaders:
     #altitude plot(s)
-        fig_altitude = plt.figure(figsize=(10.0, 3.0))
-        fig_altitude.title('Altitude vs. Time') # title
-        
-        axes1 = fig_altitude.add_subplot(1, 2, 1)
-        axes2 = fig_altitude.add_subplot(1, 2, 2)
-        
-        axes1.set_ylabel('AltitudeA [feet]')
-        axes1.set_xlabel('Time [s]')
-        axes1.plot(time_seconds,altA)
-        
-        axes2.set_ylabel('AltitudeB [feet]')
-        axes2.set_xlabel('Time [s]')
-        axes2.plot(time_seconds,altB)
-        
-        fig_altitude.tight_layout()
+        fig_altitude = plt.figure(2)
+        plt.title('Altitude vs. Time') # title        
+        plt.ylabel('Altitude [ft]')
+        plt.xlabel('Time [s]')
+        plt.plot(time_seconds,altA,'rs',time_seconds,altB,'bo')
+        fig_pressure.tight_layout()
         plt.show()
-        plt.savefig('altitudePlot.png', bbox_inches='tight')
+        plt.savefig('altitudePlot.png', dpi=300, bbox_inches='tight')
+
     
     if 'intPressure' in colHeaders:
     #internal pressure plot(s)
-        fig_intPressure = plt.figure(time_seconds,intPressure,figsize=(10.0, 3.0))
-        fig_intPressure.title('Internal Pressure vs. Time') # title
-        axes1.set_ylabel('Pressure [PSI]')
-        axes1.set_xlabel('Time [s]')
-        
-        fig_pressure.tight_layout()
-        plt.pyplot.show()
-        plt.savefig('internalPressurePlot.png', bbox_inches='tight')        
+        fig_intPressure = plt.figure(3)
+        plt.title('Internal Pressure vs. Time') # title
+        plt.ylabel('Pressure [PSI]')
+        plt.xlabel('Time [s]')
+        plt.plot(time_seconds,intPressure)
+        fig_intPressure.tight_layout()
+        plt.show()
+        plt.savefig('internalPressurePlot.png', dpi=300, bbox_inches='tight')        
     
     if 'intTemp' in colHeaders:
     #internal temperature plot(s)
-        fig_intTemp = plt.pyplot.figure(time_seconds,intTemp,figsize=(10.0, 3.0))
-        fig_intTemp.title('Internal Temperature vs. Time') # title
-        axes1.set_ylabel('Temperature [F]')
-        axes1.set_xlabel('Time [s]')
-        
-        fig_pressure.tight_layout()
-        plt.pyplot.show()
-        plt.savefig('internalTempPlot.png', bbox_inches='tight')
+        fig_intTemp = plt.figure(4)
+        plt.title('Internal Temperature vs. Time') # title
+        plt.ylabel('Temperature [F]')
+        plt.xlabel('Time [s]')
+        plt.plot(time_seconds,intTemp)
+        fig_intTemp.tight_layout()
+        plt.show()
+        plt.savefig('internalTempPlot.png', dpi=300, bbox_inches='tight')
     
     if 'ax' in colHeaders:        
     #acceleration plot(s)
