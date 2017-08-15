@@ -29,10 +29,6 @@ fig_dpi = 600
 #filename = input('What is the data file to process? : ')   #ask user for data file to process
 print('The filename being processed is:',filename)                         #print what filename was input
 #fig_dpi = int(input('What dpi would you like the figures to be? (whole number): '))   #ask user for dpi value
-
-
-
-
 flightData = np.loadtxt(fname=filename, delimiter=',')  #get the flight data from the file
 
 
@@ -72,12 +68,27 @@ if 'atmoPressureA' in colHeaders:
 if 'altA' in colHeaders:
     altA = getData(colHeaders,flightData,'altA')
     altB = getData(colHeaders,flightData,'altB')
+    
 #get internal pressure
 if 'intPressure' in colHeaders:
     intPressure = getData(colHeaders,flightData,'intPressure')
+    
 #get internal temp.
 if 'intTemp' in colHeaders:
-    intTemp = getData(colHeaders,flightData,'intTemp')
+    #thermistor coefficients and resistances
+    Rref     = 10000
+    R1_therm = 10000    #R1 value for voltage divider at thermistor
+    a1 = 0.003354016
+    b1 = 0.0002569850
+    c1 = 0.000002620131
+    D1 = 0.00000006383091
+    Vs_therm = 3.30
+    intTempV = getData(colHeaders,flightData,'intTemp')
+    R = R1_therm/((Vs_therm/intTempV)-1)
+    intTempK = 1.0/(a1 + (b1*math.log(R/Rref))+ (c1*math.pow((math.log(R/Rref)),2)) + (D1*math.pow((math.log(R/Rref)),3)))
+    intTempC = intTempK - 273.15
+    intTempF = (intTempC*1.8) + 32.0
+    
 #get accelerations
 if 'ax' in colHeaders:
     ax = getData(colHeaders,flightData,'ax')
@@ -100,13 +111,13 @@ if 'mx' in colHeaders:
 # max altitude?
 
 # vertical velocity
-velocityA = getDerivitive(altA)/getDerivitive(time_seconds)
-velocityB = getDerivitive(altB)/getDerivitive(time_seconds)
+vertVelocityA = getDerivitive(altA)/getDerivitive(time_seconds)
+vertVelocityB = getDerivitive(altB)/getDerivitive(time_seconds)
 # max velocity?
 
 # vertical acceleration
-vertAccelA = (getDerivitive(velocityA)/getDerivitive(time_seconds[1:len(time_seconds)]))/32.2
-vertAccelB = (getDerivitive(velocityB)/getDerivitive(time_seconds[1:len(time_seconds)]))/32.2
+vertAccelA = (getDerivitive(vertVelocityA)/getDerivitive(time_seconds[1:len(time_seconds)]))/32.2
+vertAccelB = (getDerivitive(vertVelocityB)/getDerivitive(time_seconds[1:len(time_seconds)]))/32.2
 # coast time?
 
 # drag?
@@ -163,7 +174,7 @@ if 'time_millis' or 'time_seconds' in colHeaders:
         plt.title('Internal Temperature vs. Time') # title
         plt.ylabel('Temperature [F]')
         plt.xlabel('Time [s]')
-        plt.plot(time_seconds,intTemp)
+        plt.plot(time_seconds,intTempF)
         fig_intTemp.tight_layout()
         plt.show()
         plt.savefig('internalTempPlot.png', dpi=fig_dpi, bbox_inches='tight')
@@ -212,19 +223,18 @@ if 'time_millis' or 'time_seconds' in colHeaders:
         
         
 ####### Extra Graphs #######
-    if 'velocityA' and 'velocityB' in globals():
+    if 'vertVelocityA' and 'vertVelocityB' in globals():
     # vertitcal veloctiy plot
         fig_vertVelocity = plt.figure(8)
         plt.title('Vertical Velocity vs. Time') # title        
         plt.ylabel('Velocity [ft/s]')
         plt.xlabel('Time [s]')
-        plt.plot(time_seconds[1:len(time_seconds)], velocityA, 'rs-', label='Pressure Sensor A')
-        plt.plot(time_seconds[1:len(time_seconds)], velocityB, 'bo-', label='Pressure Sensor B')
+        plt.plot(time_seconds[1:len(time_seconds)], vertVelocityA, 'rs-', label='Pressure Sensor A')
+        plt.plot(time_seconds[1:len(time_seconds)], vertVelocityB, 'bo-', label='Pressure Sensor B')
         fig_vertVelocity.tight_layout()
         plt.legend()
         plt.show()
         plt.savefig('verticalVelocityPlot.png', dpi=fig_dpi)        
-        
         
     if 'vertAccelA' and 'vertAccelB' in globals():
     # vertical acceleration plot
