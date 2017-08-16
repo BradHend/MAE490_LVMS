@@ -86,6 +86,8 @@ int junk = 0;
     Serial.println(junk);
     junk += analogRead(pressureB_pin);    //read pin for pressure sensor B's output
     Serial.println(junk);
+    junk += analogRead(intPressurePin);    //read pin for pressure sensor B's output
+    Serial.println(junk);
     junk += analogRead(thermistorPin);    //read pin for pressure sensor B's output
     Serial.println(junk);
     delay(10);   
