@@ -5,7 +5,7 @@
  Date: 8/15/2017
  */
 
-
+#include <math.h>
 #include <SD.h>
 #include <SPI.h>
 
