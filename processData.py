@@ -2,10 +2,9 @@
 # Main data processing script
 # Created by: Bradley Henderson, bradley.henderson@uah.edu
 # Date: 7/29/2017
-#   Last updated: 8/11/2017
+#   Last updated: 8/29/2017
 
 
-import math
 import numpy as np
 import matplotlib.pyplot as plt
 plt.close("all")
@@ -13,15 +12,14 @@ plt.close("all")
 
 #The following line needs to be changed based on the saving style, the headers
 #  must be in order as determined by the Arduino data saving
-#colHeaders = ['time_millis','atmoPressureA','atmoPressureB','altA','altB',
-#              'intPressure','intTemp','ax','ay','az','mx','my','mz',
-#              'roll','pitch','yaw']
 
-colHeaders = ['time_seconds','atmoPressureA','atmoPressureB','altA','altB','intPressure','intTemp']
+colHeaders = ['time_millis','atmoPressureA','atmoPressureB','altA','altB', \
+              'intPressure','intTemp','yaw','pitch','roll','ax','ay','az', \
+              'mx','my','mz','gx','gy','gz']
 
 
 # VARIABLES ARE FOR TESTING, REMOVE LATER
-filename = 'FlightData2.csv'
+filename = 'SENTEST7.txt'
 fig_dpi = 600
 
 
@@ -66,8 +64,8 @@ if 'atmoPressureA' in colHeaders:
     atmoPressureB = getData(colHeaders,flightData,'atmoPressureB')
 #get altitudes
 if 'altA' in colHeaders:
-    altA = getData(colHeaders,flightData,'altA')
-    altB = getData(colHeaders,flightData,'altB')
+    altA = getData(colHeaders,flightData,'altA')/10.0
+    altB = getData(colHeaders,flightData,'altB')/10.0
     
 #get internal pressure
 if 'intPressure' in colHeaders:
@@ -83,13 +81,13 @@ if 'intTemp' in colHeaders:
     c1 = 0.000002620131
     D1 = 0.00000006383091
     Vs_therm = 3.30
-    intTempV = getData(colHeaders,flightData,'intTemp')
+    intTempV = (getData(colHeaders,flightData,'intTemp'))/1000.0
     R = R1_therm/((Vs_therm/intTempV)-1)
-    intTempK = 1.0/(a1 + (b1*math.log(R/Rref))+ (c1*math.pow((math.log(R/Rref)),2)) + (D1*math.pow((math.log(R/Rref)),3)))
+    intTempK = 1.0/(a1 + (b1*np.log(R/Rref))+ (c1*np.power((np.log(R/Rref)),2)) + (D1*np.power((np.log(R/Rref)),3)))
     intTempC = intTempK - 273.15
     intTempF = (intTempC*1.8) + 32.0
     
-#get accelerations
+#get accelerations (milli-g)
 if 'ax' in colHeaders:
     ax = getData(colHeaders,flightData,'ax')
     ay = getData(colHeaders,flightData,'ay')
@@ -99,7 +97,7 @@ if 'roll' in colHeaders:
     roll  = getData(colHeaders,flightData,'roll')
     pitch = getData(colHeaders,flightData,'pitch')
     yaw   = getData(colHeaders,flightData,'yaw')
-#get magnetometer data
+#get magnetometer data (milli-gauss)
 if 'mx' in colHeaders:
     mx = getData(colHeaders,flightData,'mx')
     my = getData(colHeaders,flightData,'my')
@@ -181,9 +179,9 @@ if 'time_millis' or 'time_seconds' in colHeaders:
     
     if 'ax' in colHeaders:        
     #acceleration plot(s)
-        fig_accel = plt.pyplot.figure(5)
+        fig_accel = plt.figure(5)
         plt.title('Acceleration vs. Time') # title
-        plt.ylabel('Acceleration [g]')
+        plt.ylabel('Acceleration [milli-g]')
         plt.xlabel('Time [s]')
         plt.plot(time_seconds, ax, label='X axis')
         plt.plot(time_seconds, ay, label='Y axis')
@@ -195,9 +193,9 @@ if 'time_millis' or 'time_seconds' in colHeaders:
     
     if 'roll' in colHeaders:
     #angular rates plot(s)
-        fig_rates = plt.pyplot.figure(6)
-        plt.title('Angular Rates vs. Time') # title
-        plt.ylabel('Roll [deg/s]')
+        fig_rates = plt.figure(6)
+        plt.title('AHRS vs. Time') # title
+        plt.ylabel('Heading [deg]')
         plt.xlabel('Time [s]')
         plt.plot(time_seconds, roll, label='Roll')
         plt.plot(time_seconds, pitch, label='Pitch')
@@ -205,12 +203,12 @@ if 'time_millis' or 'time_seconds' in colHeaders:
         fig_accel.tight_layout()
         plt.legend()
         plt.show()
-        plt.savefig('angularRatesPlot.png', dpi=fig_dpi, bbox_inches='tight')
+        plt.savefig('AHRSplot.png', dpi=fig_dpi, bbox_inches='tight')
     
     if 'mx' in colHeaders:
     #magnetometer plot(s)
-        fig_mag = plt.pyplot.figure(7)
-        plt.title('Angular Rates vs. Time') # title
+        fig_mag = plt.figure(7)
+        plt.title('Magnetic Field vs. Time') # title
         plt.ylabel('Magnetic Field [mGauss]')
         plt.xlabel('Time [s]')
         plt.plot(time_seconds, mx, label='X axis')
@@ -220,12 +218,25 @@ if 'time_millis' or 'time_seconds' in colHeaders:
         plt.show()
         plt.savefig('magneticFieldPlot.png', dpi=fig_dpi, bbox_inches='tight')
         
+    if 'gx' in colHeaders:
+    #angular rates plot(s)
+        fig_rates = plt.figure(8)
+        plt.title('Angular Rates vs. Time') # title
+        plt.ylabel('Angular Rate [deg/s]')
+        plt.xlabel('Time [s]')
+        plt.plot(time_seconds, roll, label='Roll')
+        plt.plot(time_seconds, pitch, label='Pitch')
+        plt.plot(time_seconds, yaw, label='Yaw')
+        fig_accel.tight_layout()
+        plt.legend()
+        plt.show()
+        plt.savefig('angularRatesPlot.png', dpi=fig_dpi, bbox_inches='tight')
         
         
 ####### Extra Graphs #######
     if 'vertVelocityA' and 'vertVelocityB' in globals():
     # vertitcal veloctiy plot
-        fig_vertVelocity = plt.figure(8)
+        fig_vertVelocity = plt.figure(9)
         plt.title('Vertical Velocity vs. Time') # title        
         plt.ylabel('Velocity [ft/s]')
         plt.xlabel('Time [s]')
@@ -238,7 +249,7 @@ if 'time_millis' or 'time_seconds' in colHeaders:
         
     if 'vertAccelA' and 'vertAccelB' in globals():
     # vertical acceleration plot
-        fig_vertAccel = plt.figure(9)
+        fig_vertAccel = plt.figure(10)
         plt.title('Vertical Acceleration vs. Time') # title        
         plt.ylabel('Acceleration [g]')
         plt.xlabel('Time [s]')

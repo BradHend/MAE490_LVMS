@@ -25,8 +25,10 @@ unsigned long pressure_B = 0;
 ///creating global variables///
 unsigned long currentPressureA = 0;
 unsigned long currentPressureB = 0;
-float currentAltitudeA = 0;
-float currentAltitudeB = 0;
+float currentAltitudeA  = 0;
+float currentAltitudeB  = 0;
+float previousAltitudeA = 0;
+float previousAltitudeB = 0;
 float intPress = 0;
 unsigned int intTempV = 0;
 
@@ -165,11 +167,17 @@ void loop()
   // so you have to close this one before opening another.
   // this opens the file and appends to the end of file
   // if the file does not exist, this will create a new file.
- File dataFile = SD.open("senTest4.txt", FILE_WRITE);
+ File dataFile = SD.open("senTest7.txt", FILE_WRITE);
  pressure_A = pressureA(pressureA_pin);
  pressure_B = pressureB(pressureB_pin);
  currentAltitudeA = pressAltitude(pressure_A);
  currentAltitudeB = pressAltitude(pressure_B);
+ currentAltitudeA = (0.6*currentAltitudeA)+(0.4*previousAltitudeA);
+ currentAltitudeB = (0.6*currentAltitudeB)+(0.4*previousAltitudeB);
+
+ previousAltitudeA = currentAltitudeA;
+ previousAltitudeB = currentAltitudeB;
+ 
  intPress = pressureInternal();
  intTempV = intTemperature(thermistorPin);
  
@@ -227,8 +235,34 @@ void loop()
     Serial.print(myIMU.ay,2);
     Serial.print(",");
     dataFile.print(",");
-    dataFile.println(myIMU.roll);
-    Serial.println(myIMU.az,2);
+    dataFile.print(myIMU.az);
+    Serial.print(myIMU.az,2);
+
+    Serial.print(",");
+    dataFile.print(",");
+    dataFile.print(myIMU.mx);
+    Serial.print(myIMU.mx,2);
+    Serial.print(",");
+    dataFile.print(",");
+    dataFile.print(myIMU.my);
+    Serial.print(myIMU.my,2);
+    Serial.print(",");
+    dataFile.print(",");
+    dataFile.print(myIMU.mz);
+    Serial.print(myIMU.mz,2);
+
+    Serial.print(",");
+    dataFile.print(",");
+    dataFile.print(myIMU.gx);
+    Serial.print(myIMU.gx,2);
+    Serial.print(",");
+    dataFile.print(",");
+    dataFile.print(myIMU.gy);
+    Serial.print(myIMU.gy,2);
+    Serial.print(",");
+    dataFile.print(",");
+    dataFile.println(myIMU.gz);
+    Serial.println(myIMU.gz,2);
 
     dataFile.close();   //close file
 
@@ -243,7 +277,6 @@ void loop()
 
 unsigned long pressureA(int pin){                        //finds the pressure value given by pressure sensor on specified pin
   unsigned int vOut = 0;
-//const float  Vs_pressA = 3.3;
   for(int i; i<9; i++){           //loops a number of times to get average
     vOut += analogRead(pin);    //read pin for pressure sensor A's output
     delay(1);
@@ -256,7 +289,6 @@ unsigned long pressureA(int pin){                        //finds the pressure va
 
 unsigned long pressureB(int pin){                        //finds the pressure value given by pressure sensor on specified pin
   unsigned int vOut = 0;
-//const float  Vs_pressA = 3.3;
   for(int i; i<9; i++){           //loops a number of times to get average
     vOut += analogRead(pin);    //read pin for pressure sensor A's output
     delay(1);
