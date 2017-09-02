@@ -12,7 +12,9 @@
 #include <SPI.h>
 MPU9250 myIMU;
 
+const int deployTime = 6000; // 6 second deploy time
 
+///creating global variables///
 const int chipSelect = 8; // Chip Select pin is tied to pin 8 on the SparkFun SD Card Shield
 const int intPin = 12;    // These can be changed, 2 and 3 are the Arduinos ext int pins  
 const int pressureA_pin   =  0;
@@ -21,22 +23,23 @@ const int intPressurePin = 2;
 const int thermistorPin   = 3;
 unsigned long pressure_A = 0;
 unsigned long pressure_B = 0;
-
-///creating global variables///
 unsigned long currentPressureA = 0;
 unsigned long currentPressureB = 0;
-float currentAltitudeA  = 0;
-float currentAltitudeB  = 0;
-float previousAltitudeA = 0;
-float previousAltitudeB = 0;
-float initialAltitudeA = 0;
-float initialAltitudeB = 0;
+float currentAltitudeA   = 0;
+float currentAltitudeB   = 0;
+float previousAltitudeA  = 0;
+float previousAltitudeB  = 0;
+float initialAltitudeA   = 0;
+float initialAltitudeB   = 0;
+unsigned long timeStamp  = 0;
+unsigned long state1Time = 0;
 
 float intPress = 0;
 unsigned int intTempV = 0;
 
 bool startUp = true;
 byte flightState = 0;
+
 
 void setup()
 {
@@ -194,7 +197,7 @@ void loop(){
  
   // if the file is available, write to it:
   if (dataFile)   {  
-    unsigned long timeStamp = millis();
+    timeStamp = millis();
     //write to uSD card
     dataFile.print(timeStamp);
     Serial.print(timeStamp);
@@ -289,8 +292,8 @@ void loop(){
  if (flightState == 0){
     //check if altitude is > 100ft, if so start counting
     if (currentAltitudeB > (initialAltitudeB + 100)){
-      fligthState = 1;
-      unsigned long state1Time = timeStamp;
+      flightState = 1;
+      state1Time = timeStamp;
     }
     else{
       flightState = 0; 
