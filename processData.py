@@ -19,7 +19,7 @@ colHeaders = ['time_millis','atmoPressureA','atmoPressureB','altA','altB', \
 
 
 # VARIABLES ARE FOR TESTING, REMOVE LATER
-filename = 'SENTEST7.txt'
+filename = 'slowAscent.txt'
 fig_dpi = 600
 
 
@@ -105,6 +105,9 @@ if 'mx' in colHeaders:
 
 
 ######## Flight data characteristics section ########
+
+#Sampling Frequency over time
+samplingFreq = 1.0/getDerivitive(time_seconds)
 
 # max altitude?
 
@@ -258,5 +261,21 @@ if 'time_millis' or 'time_seconds' in colHeaders:
         fig_vertAccel.tight_layout()
         plt.legend()
         plt.show()
-        plt.savefig('verticalAccelPlot.png', dpi=fig_dpi)        
+        plt.savefig('verticalAccelPlot.png', dpi=fig_dpi)     
+        
+    if 'time_millis' and 'samplingFreq' in globals():
+        #Sampling frequency plot
+        fig_samplingFreq = plt.figure(11)
+        plt.title('Sampling Frequency vs. Time') # title        
+        plt.ylabel('Sampling Frequency [Hz]')
+        plt.xlabel('Time [s]')
+        plt.plot(time_seconds[1:len(time_seconds)],samplingFreq, '-')
+        fig_samplingFreq.tight_layout()
+        plt.show()
+        plt.savefig('samplingFreqPlot.png', dpi=fig_dpi)
+        
+        
+        
+        
+        
         
