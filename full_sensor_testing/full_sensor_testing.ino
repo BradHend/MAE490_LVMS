@@ -100,6 +100,14 @@ int junk = 0;
 void loop()
 {
 
+    Serial.print(",");
+    Serial.print(myIMU.ax,2);
+    Serial.print(",");
+    Serial.print(myIMU.ay,2);
+    Serial.print(",");
+    Serial.print(myIMU.az,2);
+delay(1000);
+  
 // If intPin goes high, all data registers have new data
   // On interrupt, check if data ready interrupt
   if (myIMU.readByte(MPU9250_ADDRESS, INT_STATUS) & 0x01)
@@ -108,9 +116,9 @@ void loop()
 
     // Now we'll calculate the accleration value into actual milli-g's
     // This depends on scale being set
-    myIMU.ax = 1000*((float)myIMU.accelCount[0] * myIMU.aRes); // - myIMU.accelBias[0];
-    myIMU.ay = 1000*((float)myIMU.accelCount[1] * myIMU.aRes); // - myIMU.accelBias[1];
-    myIMU.az = 1000*((float)myIMU.accelCount[2] * myIMU.aRes); // - myIMU.accelBias[2];
+    myIMU.ax = 1000*(((float)myIMU.accelCount[0] * myIMU.aRes) + myIMU.accelBias[0]) - 130.0;
+    myIMU.ay = 1000*(((float)myIMU.accelCount[1] * myIMU.aRes) + myIMU.accelBias[1]);
+    myIMU.az = 1000*(((float)myIMU.accelCount[2] * myIMU.aRes) + myIMU.accelBias[2]);
 
     myIMU.readGyroData(myIMU.gyroCount);  // Read the x/y/z adc values
 
@@ -167,7 +175,7 @@ void loop()
   // so you have to close this one before opening another.
   // this opens the file and appends to the end of file
   // if the file does not exist, this will create a new file.
- File dataFile = SD.open("senTest7.txt", FILE_WRITE);
+ File dataFile = SD.open("SHCTest2.txt", FILE_WRITE);
  pressure_A = pressureA(pressureA_pin);
  pressure_B = pressureB(pressureB_pin);
  currentAltitudeA = pressAltitude(pressure_A);
@@ -284,6 +292,7 @@ unsigned long pressureA(int pin){                        //finds the pressure va
   float Output = (vOut/9.0)*(3.3/1023.0);                  //average voltage reading to be used in pressure calc.
   Serial.println(Output, 4);
   float pressure_valA = 1000*(((Output/3.3)+0.095)/0.009);  //pressure calc.
+  pressure_valA  = (pressure_valA*1.03417) + 193.76;        //calibrated pressure for sensor A
   return (unsigned long) pressure_valA;
  }
 
@@ -296,6 +305,7 @@ unsigned long pressureB(int pin){                        //finds the pressure va
   float Output = (vOut/9.0)*(3.3/1023.0);                  //average voltage reading to be used in pressure calc.
   Serial.println(Output, 4);
   float pressure_valB = 1000*(((Output/3.3)+0.095)/0.009);  //pressure calc.
+  pressure_valB = (pressure_valB*1.03240) + 557.8;          //calibrated pressure for sensor B
   return (unsigned long) pressure_valB;
  }
 
