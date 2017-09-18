@@ -2,7 +2,7 @@
 # Main data processing script
 # Created by: Bradley Henderson, bradley.henderson@uah.edu
 # Date: 7/29/2017
-#   Last updated: 8/29/2017
+#   Last updated: 09/01/2017
 
 
 import numpy as np
@@ -19,7 +19,7 @@ colHeaders = ['time_millis','atmoPressureA','atmoPressureB','altA','altB', \
 
 
 # VARIABLES ARE FOR TESTING, REMOVE LATER
-filename = 'slowAscent.txt'
+filename = 'SHCtest2a.txt'
 fig_dpi = 600
 
 
@@ -92,17 +92,23 @@ if 'ax' in colHeaders:
     ax = getData(colHeaders,flightData,'ax')
     ay = getData(colHeaders,flightData,'ay')
     az = getData(colHeaders,flightData,'az')
-#get gyro rates (degrees/sec)
+#get AHRS
 if 'roll' in colHeaders:
     roll  = getData(colHeaders,flightData,'roll')
     pitch = getData(colHeaders,flightData,'pitch')
     yaw   = getData(colHeaders,flightData,'yaw')
+        
 #get magnetometer data (milli-gauss)
 if 'mx' in colHeaders:
     mx = getData(colHeaders,flightData,'mx')
     my = getData(colHeaders,flightData,'my')
     mz = getData(colHeaders,flightData,'mz')
 
+#get gyro rates (Degrees/sec)
+if 'gx' in colHeaders:
+    gx = getData(colHeaders,flightData,'gx')
+    gy = getData(colHeaders,flightData,'gy')
+    gz = getData(colHeaders,flightData,'gz')
 
 ######## Flight data characteristics section ########
 
@@ -227,9 +233,9 @@ if 'time_millis' or 'time_seconds' in colHeaders:
         plt.title('Angular Rates vs. Time') # title
         plt.ylabel('Angular Rate [deg/s]')
         plt.xlabel('Time [s]')
-        plt.plot(time_seconds, roll, label='Roll')
-        plt.plot(time_seconds, pitch, label='Pitch')
-        plt.plot(time_seconds, yaw, label='Yaw')
+        plt.plot(time_seconds, gx, label='g-X')
+        plt.plot(time_seconds, gy, label='g-Y')
+        plt.plot(time_seconds, gz, label='g-Z')
         fig_accel.tight_layout()
         plt.legend()
         plt.show()
