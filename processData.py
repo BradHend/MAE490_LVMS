@@ -2,7 +2,7 @@
 # Main data processing script
 # Created by: Bradley Henderson, bradley.henderson@uah.edu
 # Date: 7/29/2017
-#   Last updated: 09/01/2017
+#   Last updated: 10/25/2017
 
 
 import numpy as np
@@ -14,31 +14,33 @@ plt.close("all")
 #  must be in order as determined by the Arduino data saving
 
 colHeaders = ['time_millis','atmoPressureA','atmoPressureB','altA','altB', \
-              'intPressure','intTemp','yaw','pitch','roll','ax','ay','az', \
+              'intPressure','intTemp','ax','ay','az', \
               'mx','my','mz','gx','gy','gz']
 
 
 # VARIABLES ARE FOR TESTING, REMOVE LATER
-filename = 'SHCtest2a.txt'
-fig_dpi = 600
-
+#filename = 'SHCtest2a.txt' #filename for testing
+#fig_dpi = 600
 
 #Ask for file name to process
-#filename = input('What is the data file to process? : ')   #ask user for data file to process
-print('The filename being processed is:',filename)                         #print what filename was input
-#fig_dpi = int(input('What dpi would you like the figures to be? (whole number): '))   #ask user for dpi value
-flightData = np.loadtxt(fname=filename, delimiter=',')  #get the flight data from the file
+filename = input('What is the data file to process? : ')   #ask user for data file to process
+print('The filename being processed is:',filename)#print what filename was input
+
+#ask user for figure dpi value
+fig_dpi = int(input('What dpi would you like the figures to be? (whole number): '))
+#get the flight data from the file, skip first 4 rows (start-up data)
+flightData = np.loadtxt(fname=filename, delimiter=',',skiprows=4) 
 
 
 #function to retrieve data based on what column header is requested
 def getData(colHeaders,data_array,variable_interest): 
     j = 0
     i = 0
-    for i in range(len(colHeaders)):             #loops over entire 'colHeaders' list
-        if colHeaders[i] == variable_interest:   #finds column index for requested data
-                j = i                            #hold the index value
-    dataRequested = data_array[:,j]              #column of data
-    return dataRequested                         #return the requested data
+    for i in range(len(colHeaders)):           #loops over entire 'colHeaders' list
+        if colHeaders[i] == variable_interest: #finds column index for req. data
+                j = i                          #hold the index value
+    dataRequested = data_array[:,j]            #column of data
+    return dataRequested                       #return the requested data
 
 #function to take derivitive
 def getDerivitive(data_array):
@@ -69,7 +71,8 @@ if 'altA' in colHeaders:
     
 #get internal pressure
 if 'intPressure' in colHeaders:
-    intPressure = getData(colHeaders,flightData,'intPressure')
+    intPressure_hundredths = getData(colHeaders,flightData,'intPressure')
+    intPressure = intPressure_hundredths/100
     
 #get internal temp.
 if 'intTemp' in colHeaders:
@@ -83,7 +86,9 @@ if 'intTemp' in colHeaders:
     Vs_therm = 3.30
     intTempV = (getData(colHeaders,flightData,'intTemp'))/1000.0
     R = R1_therm/((Vs_therm/intTempV)-1)
-    intTempK = 1.0/(a1 + (b1*np.log(R/Rref))+ (c1*np.power((np.log(R/Rref)),2)) + (D1*np.power((np.log(R/Rref)),3)))
+    intTempK = 1.0/(a1 + (b1*np.log(R/Rref))+ \
+               (c1*np.power((np.log(R/Rref)),2)) + \
+               (D1*np.power((np.log(R/Rref)),3)))
     intTempC = intTempK - 273.15
     intTempF = (intTempC*1.8) + 32.0
     
@@ -92,23 +97,23 @@ if 'ax' in colHeaders:
     ax = getData(colHeaders,flightData,'ax')
     ay = getData(colHeaders,flightData,'ay')
     az = getData(colHeaders,flightData,'az')
-#get AHRS
+#get gyro rates (degrees/sec)
 if 'roll' in colHeaders:
     roll  = getData(colHeaders,flightData,'roll')
     pitch = getData(colHeaders,flightData,'pitch')
     yaw   = getData(colHeaders,flightData,'yaw')
-        
 #get magnetometer data (milli-gauss)
 if 'mx' in colHeaders:
     mx = getData(colHeaders,flightData,'mx')
     my = getData(colHeaders,flightData,'my')
     mz = getData(colHeaders,flightData,'mz')
-
+    
 #get gyro rates (Degrees/sec)
 if 'gx' in colHeaders:
     gx = getData(colHeaders,flightData,'gx')
     gy = getData(colHeaders,flightData,'gy')
     gz = getData(colHeaders,flightData,'gz')
+
 
 ######## Flight data characteristics section ########
 
@@ -146,8 +151,9 @@ if 'time_millis' or 'time_seconds' in colHeaders:
         plt.plot(time_seconds,atmoPressureB, 'bo-', label='Sensor B')
         fig_pressure.tight_layout()
         plt.legend()
-        plt.show()
         plt.savefig('pressurePlot.png', dpi=fig_dpi)
+        plt.show()
+        
         
         
     if 'altA' in colHeaders:
@@ -160,8 +166,9 @@ if 'time_millis' or 'time_seconds' in colHeaders:
         plt.plot(time_seconds,altB,'bo-', label='Sensor B')
         fig_pressure.tight_layout()
         plt.legend()
-        plt.show()
         plt.savefig('altitudePlot.png', dpi=fig_dpi, bbox_inches='tight')
+        plt.show()
+        
 
     
     if 'intPressure' in colHeaders:
@@ -172,8 +179,9 @@ if 'time_millis' or 'time_seconds' in colHeaders:
         plt.xlabel('Time [s]')
         plt.plot(time_seconds,intPressure)
         fig_intPressure.tight_layout()
+        plt.savefig('internalPressurePlot.png', dpi=fig_dpi, bbox_inches='tight')  
         plt.show()
-        plt.savefig('internalPressurePlot.png', dpi=fig_dpi, bbox_inches='tight')        
+              
     
     if 'intTemp' in colHeaders:
     #internal temperature plot(s)
@@ -183,8 +191,9 @@ if 'time_millis' or 'time_seconds' in colHeaders:
         plt.xlabel('Time [s]')
         plt.plot(time_seconds,intTempF)
         fig_intTemp.tight_layout()
-        plt.show()
         plt.savefig('internalTempPlot.png', dpi=fig_dpi, bbox_inches='tight')
+        plt.show()
+        
     
     if 'ax' in colHeaders:        
     #acceleration plot(s)
@@ -197,8 +206,9 @@ if 'time_millis' or 'time_seconds' in colHeaders:
         plt.plot(time_seconds, az, label='Z axis')        
         fig_accel.tight_layout()
         plt.legend()
-        plt.show()
         plt.savefig('accerlerationPlot.png', dpi=fig_dpi, bbox_inches='tight')
+        plt.show()
+        
     
     if 'roll' in colHeaders:
     #angular rates plot(s)
@@ -211,8 +221,9 @@ if 'time_millis' or 'time_seconds' in colHeaders:
         plt.plot(time_seconds, yaw, label='Yaw')
         fig_accel.tight_layout()
         plt.legend()
-        plt.show()
         plt.savefig('AHRSplot.png', dpi=fig_dpi, bbox_inches='tight')
+        plt.show()
+        
     
     if 'mx' in colHeaders:
     #magnetometer plot(s)
@@ -224,8 +235,9 @@ if 'time_millis' or 'time_seconds' in colHeaders:
         plt.plot(time_seconds, my, label='Y axis')
         plt.plot(time_seconds, mz, label='Z axis')
         fig_mag.tight_layout()
-        plt.show()
         plt.savefig('magneticFieldPlot.png', dpi=fig_dpi, bbox_inches='tight')
+        plt.show()
+        
         
     if 'gx' in colHeaders:
     #angular rates plot(s)
@@ -238,8 +250,9 @@ if 'time_millis' or 'time_seconds' in colHeaders:
         plt.plot(time_seconds, gz, label='g-Z')
         fig_accel.tight_layout()
         plt.legend()
-        plt.show()
         plt.savefig('angularRatesPlot.png', dpi=fig_dpi, bbox_inches='tight')
+        plt.show()
+        
         
         
 ####### Extra Graphs #######
@@ -253,8 +266,9 @@ if 'time_millis' or 'time_seconds' in colHeaders:
         plt.plot(time_seconds[1:len(time_seconds)], vertVelocityB, 'bo-', label='Pressure Sensor B')
         fig_vertVelocity.tight_layout()
         plt.legend()
+        plt.savefig('verticalVelocityPlot.png', dpi=fig_dpi)
         plt.show()
-        plt.savefig('verticalVelocityPlot.png', dpi=fig_dpi)        
+                
         
     if 'vertAccelA' and 'vertAccelB' in globals():
     # vertical acceleration plot
@@ -266,8 +280,9 @@ if 'time_millis' or 'time_seconds' in colHeaders:
         plt.plot(time_seconds[2:len(time_seconds)], vertAccelB, 'bo-', label='Pressure Sensor B')
         fig_vertAccel.tight_layout()
         plt.legend()
+        plt.savefig('verticalAccelPlot.png', dpi=fig_dpi)
         plt.show()
-        plt.savefig('verticalAccelPlot.png', dpi=fig_dpi)     
+             
         
     if 'time_millis' and 'samplingFreq' in globals():
         #Sampling frequency plot
@@ -277,8 +292,9 @@ if 'time_millis' or 'time_seconds' in colHeaders:
         plt.xlabel('Time [s]')
         plt.plot(time_seconds[1:len(time_seconds)],samplingFreq, '-')
         fig_samplingFreq.tight_layout()
-        plt.show()
         plt.savefig('samplingFreqPlot.png', dpi=fig_dpi)
+        plt.show()
+        
         
         
         
