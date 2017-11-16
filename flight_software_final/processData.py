@@ -2,7 +2,7 @@
 # Main data processing script
 # Created by: Bradley Henderson, bradley.henderson@uah.edu
 # Date: 7/29/2017
-#   Last updated: 11/4/2017
+#   Last updated: 11/16/2017
 
 
 import numpy as np
@@ -19,11 +19,11 @@ colHeaders = ['time_millis','atmoPressureA','atmoPressureB', \
 
 
 # VARIABLES ARE FOR TESTING, REMOVE LATER
-filename = 'demo_day_flight1.txt' #filename for testing
+#filename = 'demo_day_flight1.txt' #filename for testing
 fig_dpi = 600
 
 #Ask for file name to process
-#filename = input('What is the data file to process? : ')   #ask user for data file to process
+filename = input('What is the data file to process? : ')   #ask user for data file to process
 print('The filename being processed is:',filename)#print what filename was input
 
 #ask user for figure dpi value
@@ -53,10 +53,11 @@ def getDerivitive(data_array):
 #function to exponentially smooth any data set
 def smoothData(data_array):
     smoothedData = np.zeros((len(data_array),1))
-    i = 0
+    i = 1
     for i in range(len(data_array)-1):             #loops over entire dataArray
-        smoothedData[i] = (0.6*data_array[i]) - (0.4*data_array[i-1]) #EXP smooth
-    smoothedData[len(data_array)] = data_array[len(data_array)]
+        smoothedData[i] = (0.7*data_array[i]) + (0.3*data_array[i-1]) #EXP smooth
+    smoothedData[len(data_array)-1] = data_array[len(data_array)-1]
+    smoothedData[0] = data_array[0]
     return smoothedData                         #return the differenced data
 
 ######## Importing data section ########
@@ -70,6 +71,7 @@ if 'time_millis' in colHeaders:
 #get time in seconds if not in milliseconds
 elif 'time_seconds' in colHeaders:
     time_seconds = getData(colHeaders,flightData,'time')
+    
 #get atmosheric pressures
 if 'atmoPressureA' in colHeaders:
     PressureA = getData(colHeaders,flightData,'atmoPressureA')
@@ -80,19 +82,22 @@ if 'atmoPressureA' in colHeaders:
     atmoPressureB = (1000*(((OutputB/3.3)+0.095)/0.009))
     #section below for smoothing pressure/altitude data
     atmoPressureA = smoothData(atmoPressureA)
-    
-    
+    atmoPressureB = smoothData(atmoPressureB)
+      
 #get altitudes
 if 'atmoPressureA' in colHeaders:
     pressureMillibarA = atmoPressureA/100.0;                              #converts kPa to mBar
     altA = (1-(pow((pressureMillibarA/1013.25),0.190284)))*145366.45  #calculates altitude in feet
     initial_altA = np.average(altA[1:40])
     altA = altA - initial_altA
-    pressureMillibarB = atmoPressureA/100.0;                              #converts kPa to mBar
+    pressureMillibarB = atmoPressureB/100.0;                              #converts kPa to mBar
     altB = (1-(pow((pressureMillibarB/1013.25),0.190284)))*145366.45  #calculates altitude in feet  
     initial_altB = np.average(altB[1:40])
     altB = altB - initial_altB
-
+    maxAltA = np.amax(altA)
+    maxAltB = np.amax(altB)
+    print('Max Alt. A is:',maxAltA,'feet') #print max altA
+    print('Max Alt. B is:',maxAltB,'feet') #print max altB
     
 #get internal pressure
 if 'intPressure' in colHeaders:
