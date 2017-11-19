@@ -224,9 +224,9 @@ if 'time_millis' or 'time_seconds' in colHeaders:
         plt.title('Acceleration vs. Time') # title
         plt.ylabel('Acceleration [milli-g]')
         plt.xlabel('Time [s]')
-        plt.plot(time_seconds, ax, label='X axis')
-        plt.plot(time_seconds, ay, label='Y axis')
-        plt.plot(time_seconds, az, label='Z axis')        
+        plt.plot(time_seconds, ax, label='a-X')
+        plt.plot(time_seconds, ay, label='a-Y')
+        plt.plot(time_seconds, az, label='a-Z')        
         fig_accel.tight_layout()
         plt.legend()
         plt.savefig('accerlerationPlot.png', dpi=fig_dpi, bbox_inches='tight')
@@ -252,10 +252,11 @@ if 'time_millis' or 'time_seconds' in colHeaders:
         plt.title('Magnetic Field vs. Time') # title
         plt.ylabel('Magnetic Field [mGauss]')
         plt.xlabel('Time [s]')
-        plt.plot(time_seconds, mx, label='X axis')
-        plt.plot(time_seconds, my, label='Y axis')
-        plt.plot(time_seconds, mz, label='Z axis')
+        plt.plot(time_seconds, mx, label='m-X')
+        plt.plot(time_seconds, my, label='m-Y')
+        plt.plot(time_seconds, mz, label='m-Z')
         fig_mag.tight_layout()
+        plt.legend()
         plt.savefig('magneticFieldPlot.png', dpi=fig_dpi, bbox_inches='tight')
         plt.show()
                
